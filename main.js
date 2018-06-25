@@ -28,6 +28,7 @@ router.afterEach((to, from, next) => {
 
 // 数据导入
 import product_data from './product.js';
+import { resolve } from 'dns';
 // 数组排重
 function getFilterArray (array) {
   const res = [];
@@ -62,7 +63,34 @@ const store = new Vuex.Store({
     // 添加商品列表
     setProductList (state,data) {
       state.productList = data;
-    }
+    },
+    // 添加商品到购物车
+    addCart (state,id) {
+      // 如果商品已有，数量加1
+      const isAdded = state.cartList.find(item => item.id === id);
+      if (isAdded) {
+        isAdded.count ++;
+      } else {
+        state.cartList.push({
+          id: id,
+          count: 1
+        })
+      }
+    },
+    // 清空购物车
+    emptyCart (state) {
+      state.cartList = [];
+    },
+    // 修改商品数量
+    editCartCount (state,payload) {
+      const product = state.cartList.find(item => item.id == payload.id);
+      product.count += payload.count;
+    },
+    // 删除商品
+    deleteCart (state,id) {
+      const index = state.cartList.findIndex(item => item.id === id);
+      state.cartList.splice(index,1);
+    } 
   },
   actions: {
     // 请求商品列表
@@ -71,6 +99,15 @@ const store = new Vuex.Store({
       setTimeout( () => {
         context.commit('setProductList',product_data)
       },500)
+    },
+    // 购买
+    buy (context) {
+      return new Promise(resolve => {
+        setTimeout( () => {
+          context.commit("emptyCart");
+          resolve();
+        },500)
+      })
     }
   }
 })
